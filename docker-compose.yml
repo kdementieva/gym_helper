@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: gym_helper_db
+    environment:
+      POSTGRES_DB: gym_helper
+      POSTGRES_USER: gym_helper
+      POSTGRES_PASSWORD: gym_helper
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
