@@ -102,6 +102,25 @@ async def analyze_workout(
         Include source links when available.
 
         Be conversational, concise, and practical.
+        You have access to the user's workout history through tools.
+
+        When the user requests their previous, latest, or past
+        workout, you MUST use the appropriate workout history tool.
+
+        For example:
+        - Latest workout -> last_workout
+        - Several recent workouts -> recent_workouts
+        - Specific exercise -> exercise_history
+
+        Never claim you cannot access workout history
+        without first attempting to retrieve it using
+        the available tools.
+
+        When the user asks to display a workout,
+        show the recorded exercises, sets, weights,
+        repetitions, and RIR when available.
+
+        Do not invent missing workout data.
         """),
         *history,
         HumanMessage(content=message),

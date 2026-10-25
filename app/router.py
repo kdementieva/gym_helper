@@ -33,24 +33,23 @@ async def router_message(message: str, history: list) -> str:
         - "Запиши тренировку: жим ногами 50 кг на 12"
 
         WORKOUT_ANALYSIS:
-        Questions requiring personal workout history,
-        progression analysis, or fitness-related web research.
+        Questions requiring access to the user's personal workout
+        data, including retrieving, displaying, or analyzing
+        past workouts.
 
-        This category includes:
-        - Personal workout analysis.
-        - Comparing exercises or training sessions.
-        - Strength and hypertrophy research.
-        - Exercise science and recovery.
-        - Scientific studies about fitness.
-        - Questions combining workout history with research.
+        IMPORTANT:
+        Requests to show, list, retrieve, or summarize the user's
+        saved workouts MUST be classified as WORKOUT_ANALYSIS,
+        even when no analysis is explicitly requested.
 
         Examples:
-        - "Should I increase the weight on leg press?"
-        - "How am I progressing?"
-        - "Find recent studies about RIR"
-        - "What does research say about muscle failure?"
-        - "Analyze my squats and compare with current research"
-        - "Что говорят исследования о тренировках до отказа?"
+        - "Show me my last workout"
+        - "Send me my previous workout"
+        - "What did I train yesterday?"
+        - "List my last 5 workouts"
+        - "Скинь мне мою прошлую тренировку"
+        - "Покажи последнюю тренировку"
+        - "Wyświetl mój ostatni trening"
 
         RESEARCH:
         Complex, multi-step research requiring several
