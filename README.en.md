@@ -38,18 +38,33 @@ On Windows PowerShell, activate the environment with `.\.venv\Scripts\Activate.p
 
 ### 2. Configure the environment
 
-Copy `.env.template` to `.env` and fill in these values:
+Copy the configuration templates:
+
+```bash
+cp .env.template .env
+cp .env.db.template .env.db
+```
+
+Set the PostgreSQL credentials in `.env.db`. Docker Compose passes these values to the container through `env_file`:
+
+```dotenv
+POSTGRES_DB=gym_helper
+POSTGRES_USER=gym_helper
+POSTGRES_PASSWORD=your_database_password
+```
+
+Fill in the API keys, bot token, and connection URL in `.env`:
 
 ```dotenv
 OPENAI_API_GPT=your_openai_api_key
 TAVILY_API_KEY=your_tavily_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-DATABASE_URL=postgresql+asyncpg://gym_helper:gym_helper@localhost:5433/gym_helper
+DATABASE_URL=postgresql+asyncpg://gym_helper:your_database_password@localhost:5433/gym_helper
 ```
 
 Set the OpenAI key through `OPENAI_API_GPT`, read by [`app/config.py`](app/config.py).
 
-Create a Telegram bot token through `@BotFather`. Keep `.env` and real API keys out of the repository. The example database settings match the local `docker-compose.yml`.
+Create a Telegram bot token through `@BotFather`. Both `.env` and `.env.db` are excluded from Git; the templates can be committed. Use the username, password, and database name from `.env.db` in `DATABASE_URL`. URL-encode any special URL characters in the password when building the connection URL.
 
 ### 3. Start the database and apply migrations
 
@@ -58,7 +73,7 @@ docker compose up -d postgres
 python -m alembic upgrade head
 ```
 
-Wait for PostgreSQL to become ready before running migrations. Compose starts only the database; its data is persisted in the `postgres_data` Docker volume. The database is exposed on local port `5433`.
+Wait for PostgreSQL to become ready before running migrations. Compose starts only the database; its data is persisted in the `postgres_data` Docker volume. The database is available only locally at `127.0.0.1:5433`. The `POSTGRES_*` values apply when an empty volume is first initialized; editing `.env.db` does not change the credentials of an existing database.
 
 ### 4. Start the bot
 
@@ -120,17 +135,14 @@ app/
   tools.py            Training research search and workout history tools
 migration/            Alembic migrations
 docker-compose.yml    Local PostgreSQL service
+.env.template         Bot and database connection settings template
+.env.db.template      PostgreSQL container environment template
 main.py               Entry point
 ```
 
 ## Verification and current limitations
 
-`test_workout_history.py` and `test_tools.py` are manual integration scripts. They require a configured environment, a migrated database, and workout data for `user_id=1`; `test_tools.py` also calls OpenAI.
-
-```bash
-python test_workout_history.py
-python test_tools.py
-```
+There are currently no automated tests in the repository. After starting the bot, check language selection with `/start`, log and confirm a workout, and then request the latest saved workout.
 
 Workout drafts and conversation states are kept in process memory and are lost on restart. Saved workouts and messages remain in PostgreSQL. The latest 10 messages are loaded for conversation context.
 

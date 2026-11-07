@@ -38,18 +38,33 @@ python -m pip install -r requirements.txt
 
 ### 2. Настройте окружение
 
-Скопируйте `.env.template` в `.env` и заполните его:
+Скопируйте шаблоны конфигурации:
+
+```bash
+cp .env.template .env
+cp .env.db.template .env.db
+```
+
+В `.env.db` задайте параметры PostgreSQL. Docker Compose передаёт их контейнеру через `env_file`:
+
+```dotenv
+POSTGRES_DB=gym_helper
+POSTGRES_USER=gym_helper
+POSTGRES_PASSWORD=your_database_password
+```
+
+В `.env` заполните ключи API, токен бота и строку подключения:
 
 ```dotenv
 OPENAI_API_GPT=your_openai_api_key
 TAVILY_API_KEY=your_tavily_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-DATABASE_URL=postgresql+asyncpg://gym_helper:gym_helper@localhost:5433/gym_helper
+DATABASE_URL=postgresql+asyncpg://gym_helper:your_database_password@localhost:5433/gym_helper
 ```
 
 Ключ OpenAI задаётся переменной `OPENAI_API_GPT`, которую читает [`app/config.py`](app/config.py).
 
-Токен Telegram-бота создаётся через `@BotFather`. Не публикуйте `.env` и реальные ключи в репозитории. Параметры базы в примере соответствуют локальному `docker-compose.yml`.
+Токен Telegram-бота создаётся через `@BotFather`. Файлы `.env` и `.env.db` исключены из Git; шаблоны можно хранить в репозитории. В `DATABASE_URL` используйте имя пользователя, пароль и имя базы из `.env.db`. Если пароль содержит специальные символы URL, закодируйте их в строке подключения.
 
 ### 3. Запустите базу и примените миграции
 
@@ -58,7 +73,7 @@ docker compose up -d postgres
 python -m alembic upgrade head
 ```
 
-Дождитесь готовности PostgreSQL перед запуском миграций. Compose запускает только базу; её данные сохраняются в Docker volume `postgres_data`. Порт базы на компьютере — `5433`.
+Дождитесь готовности PostgreSQL перед запуском миграций. Compose запускает только базу; её данные сохраняются в Docker volume `postgres_data`. База доступна только локально по адресу `127.0.0.1:5433`. Значения `POSTGRES_*` применяются при первой инициализации пустого volume; изменение `.env.db` не меняет учётные данные уже созданной базы.
 
 ### 4. Запустите бота
 
@@ -120,17 +135,14 @@ app/
   tools.py            Поиск исследований и инструменты доступа к истории тренировок
 migration/            Миграции Alembic
 docker-compose.yml    Локальный PostgreSQL
+.env.template         Шаблон настроек бота и подключения к базе
+.env.db.template      Шаблон переменных контейнера PostgreSQL
 main.py               Точка входа
 ```
 
 ## Проверка и текущие ограничения
 
-`test_workout_history.py` и `test_tools.py` — ручные интеграционные скрипты. Они требуют настроенного окружения, базы с миграциями и данных пользователя с `user_id=1`; `test_tools.py` также обращается к OpenAI.
-
-```bash
-python test_workout_history.py
-python test_tools.py
-```
+Автоматические тесты в репозитории пока отсутствуют. После запуска проверьте выбор языка через `/start`, запись и подтверждение тренировки, а затем запрос последней сохранённой тренировки.
 
 Черновики тренировок и состояния диалога хранятся в памяти процесса и теряются при перезапуске. Сохранённые тренировки и переписка остаются в PostgreSQL. Для контекста диалога загружаются последние 10 сообщений.
 
