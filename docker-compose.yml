@@ -2,12 +2,49 @@ services:
   postgres:
     image: postgres:17
     container_name: gym_helper_db
-    env_file:
-      - .env.db
-    ports:
-      - "127.0.0.1:5433:5432"
+    restart: unless-stopped
+    env_file: .env.db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gym_helper -d gym_helper"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  migrate:
+    build: .
+    image: gym-helper:local
+    restart: "no"
+    env_file:
+      - .env
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  bot:
+    build: .
+    image: gym-helper:local
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
