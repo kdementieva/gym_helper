@@ -4,6 +4,11 @@
 
 An AI Telegram bot for logging strength workouts, reviewing progress, and answering fitness questions. Interact through natural language messages without separate commands for every task.
 
+## Live Demo
+
+Try Gym Helper directly in Telegram:
+[Open Gym Helper Bot](https://t.me/gym_helper_ai_bot)
+
 ## Features
 
 - Extract exercises, sets, weights, repetitions, and RIR from text.
